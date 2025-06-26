@@ -53,8 +53,9 @@ Clone and Set Up Deep SORT
 # Upload ckpt.t7 manually or use:
 !mv ckpt.t7 /content/deep_sort/deep/checkpoint/ckpt.t7
 
-### How to Run the Pipeline
-Step 1: Player Detection using YOLO
+
+How to Run the Pipeline
+STEP 1: Player Detection using YOLO
 from ultralytics import YOLO
 model = YOLO("/content/drive/MyDrive/player-reid/mod.pt")
 
@@ -64,7 +65,7 @@ import pandas as pd
 df = pd.DataFrame(detections, columns=["frame", "x1", "y1", "x2", "y2", "confidence"])
 df.to_csv("/content/player_detections.csv", index=False)
 
-Step 2: Player Tracking with Deep SORT
+STEP 2: Player Tracking with Deep SORT
 from deep_sort.deep_sort.deep_sort import DeepSort
 deepsort = DeepSort(model_path="/content/deep_sort/deep/checkpoint/ckpt.t7")
 outputs = deepsort.update(bbox_xywh, confs, [0]*len(bbox_xywh), frame)
