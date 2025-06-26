@@ -1,4 +1,4 @@
-# 🏟 Player Re-Identification in Sports Video using YOLOv11 + Deep SORT
+# Player Re-Identification in Sports Video using YOLOv11 + Deep SORT
 
 This project solves a real-world **sports analytics** problem: **player re-identification**. The goal is to assign consistent player IDs to each player throughout a video — even when they leave and re-enter the frame.
 
@@ -53,7 +53,7 @@ Clone and Set Up Deep SORT
 # Upload ckpt.t7 manually or use:
 !mv ckpt.t7 /content/deep_sort/deep/checkpoint/ckpt.t7
 
-How to Run the Pipeline
+### How to Run the Pipeline
 Step 1: Player Detection using YOLO
 from ultralytics import YOLO
 model = YOLO("/content/drive/MyDrive/player-reid/mod.pt")
