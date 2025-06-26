@@ -55,17 +55,18 @@ Clone and Set Up Deep SORT
 
 
 How to Run the Pipeline
+
 STEP 1: Player Detection using YOLO
+
 from ultralytics import YOLO
 model = YOLO("/content/drive/MyDrive/player-reid/mod.pt")
-
 results = model(frame)  
-
 import pandas as pd
 df = pd.DataFrame(detections, columns=["frame", "x1", "y1", "x2", "y2", "confidence"])
 df.to_csv("/content/player_detections.csv", index=False)
 
 STEP 2: Player Tracking with Deep SORT
+
 from deep_sort.deep_sort.deep_sort import DeepSort
 deepsort = DeepSort(model_path="/content/deep_sort/deep/checkpoint/ckpt.t7")
 outputs = deepsort.update(bbox_xywh, confs, [0]*len(bbox_xywh), frame)
@@ -73,10 +74,12 @@ cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 cv2.putText(frame, f'ID: {track_id}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
 Save final outputs:
+
 player_reid_output.mp4   
 player_tracks.csv        
 
 Output Samples
+
 | File                     | Description                              |
 | ------------------------ | ---------------------------------------- |
 | `player_reid_output.mp4` | Output video with tracked player IDs     |
