@@ -1,113 +1,76 @@
-# Player Re-Identification in Sports Video using YOLOv11 + Deep SORT
+#  Player Re-Identification in Sports Video using YOLOv11 + Deep SORT
 
-This project solves a real-world **sports analytics** problem: **player re-identification**. The goal is to assign consistent player IDs to each player throughout a video — even when they leave and re-enter the frame.
+This project tackles a real-world **sports analytics** problem — **player re-identification**. The objective is to assign consistent player IDs to each player throughout a short sports video, even when they leave and re-enter the frame.
 
-We use a **custom-trained YOLOv11** model for detecting players and a **Deep SORT tracker** to re-identify players using visual and motion-based features.
+We achieve this using a **custom-trained YOLOv11 model** for player detection and **Deep SORT** for tracking and re-identification using visual and motion-based cues.
 
+---
 
 ##  Objective
 
-> Identify and track players in a 15-second sports video.  
-> Ensure that players who go out of the frame and come back retain their original ID.
+> Track all players in a 15-second video.  
+> Ensure players who exit and re-enter the frame retain the same ID.  
 
 ---
 
 ##  Project Structure
 
-| File/Folder | Description |
-|-------------|-------------|
-| `mod.pt` | YOLOv11 detection model (trained to detect players and ball) |
-| `vedio.mp4` | Input test video |
+| File/Folder             | Description                                       |
+|-------------------------|---------------------------------------------------|
+| `mod.pt`                | YOLOv11 detection model (trained to detect players and ball) |
+| `vedio.mp4`             | Input test video                                  |
 | `player_detections.csv` | YOLO detection outputs (bounding boxes per frame) |
-| `player_tracks.csv` | Tracking results: frame-wise IDs and coordinates |
-| `player_reid_output.mp4` | Final output video with IDs and boxes |
-| `Untitled7.ipynb` | Google Colab notebook with full pipeline |
-| `/deep_sort` | Deep SORT tracking code |
-| `ckpt.t7` | Deep SORT appearance model checkpoint |
+| `player_tracks.csv`     | Tracking results: frame-wise IDs and coordinates  |
+| `player_reid_output.mp4`| Final output video with IDs and boxes             |
+| `Untitled7.ipynb`       | Google Colab notebook with full pipeline          |
+| `/deep_sort`            | Deep SORT tracking code                           |
+| `ckpt.t7`               | Deep SORT appearance model checkpoint             |
 
 ---
 
-##  Setup Instructions (Google Colab)
+## ⚙️ Setup Instructions (Google Colab)
 
 ### 1. Upload Required Files
-
-Upload the following to your Colab environment or Drive:
-- `vedio.mp4`
-- `mod.pt` (YOLO model)
-- `ckpt.t7` (Deep SORT checkpoint)
-
----
+Make sure the following files are uploaded to your Colab workspace or Google Drive:
+- `vedio.mp4` (input video)
+- `mod.pt` (YOLOv11 detection model)
+- `ckpt.t7` (Deep SORT appearance model)
 
 ### 2. Install Required Libraries
+Install dependencies including `ultralytics`, `opencv-python`, `pandas`, `tqdm`, `filterpy`, `lap`, `scikit-image`.
 
-```bash
-!pip install ultralytics opencv-python pandas numpy tqdm filterpy lap scikit-image
-
-Clone and Set Up Deep SORT
-!git clone https://github.com/ZQPei/deep_sort_pytorch.git
-%cd deep_sort_pytorch
-!cp -r deep_sort /content/deep_sort
-%cd /content
-!mkdir -p /content/deep_sort/deep/checkpoint
-# Upload ckpt.t7 manually or use:
-!mv ckpt.t7 /content/deep_sort/deep/checkpoint/ckpt.t7
-
-
-----
-
-
-## 🚀 How to Run the Pipeline
-
-**STEP 1: Player Detection using YOLO**
-
-```python
-from ultralytics import YOLO
-model = YOLO("/content/drive/MyDrive/player-reid/mod.pt")
-results = model(frame)
-
-import pandas as pd
-# Format and save detections
-detections = []
-for result in results:
-    for box in result.boxes:
-        cls = int(box.cls[0])
-        if cls == 0:  # Player class
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            conf = float(box.conf[0])
-            detections.append([frame_id, x1, y1, x2, y2, conf])
-df = pd.DataFrame(detections, columns=["frame", "x1", "y1", "x2", "y2", "confidence"])
-df.to_csv("/content/player_detections.csv", index=False)
-```
-
-**STEP 2: Player Tracking with Deep SORT**
-
-```python
-from deep_sort.deep_sort.deep_sort import DeepSort
-deepsort = DeepSort(model_path="/content/deep_sort/deep/checkpoint/ckpt.t7")
-
-outputs = deepsort.update(bbox_xywh, confs, [0]*len(bbox_xywh), frame)
-
-for output in outputs:
-    if len(output) == 5:
-        x, y, w, h, track_id = output
-        x1, y1, x2, y2 = int(x), int(y), int(x + w), int(y + h)
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, f'ID: {track_id}', (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-```
-
-**Save final outputs:**
-
-- `player_reid_output.mp4`  
-- `player_tracks.csv`
+### 3. Clone and Set Up Deep SORT
+Clone the Deep SORT repository, move necessary folders, and place the `ckpt.t7` file under `/content/deep_sort/deep/checkpoint/`.
 
 ---
 
-## 📦 Output Samples
+##  How to Run the Pipeline
+
+**STEP 1: Player Detection using YOLO**  
+Detect players and save the bounding boxes for each frame to `player_detections.csv`.
+
+**STEP 2: Player Tracking with Deep SORT**  
+Use Deep SORT to assign consistent tracking IDs and draw bounding boxes and IDs across frames.
+
+**Save final outputs:**
+- `player_reid_output.mp4` (output video with IDs and boxes)
+- `player_tracks.csv` (CSV with frame, player_id, and coordinates)
+
+---
+
+##  Output Samples
 
 | File                     | Description                              |
 |--------------------------|------------------------------------------|
 | `player_reid_output.mp4` | Output video with tracked player IDs     |
 | `player_tracks.csv`      | Frame-by-frame coordinates and player ID |
+
+---
+
+##  Notes
+
+- Player IDs may not appear if detections are very small or confidence is low.
+- This project uses visual features from Deep SORT for player identity consistency.
+- A fully working solution was not mandatory — the primary aim is to demonstrate **consistent tracking** using YOLO and Deep SORT.
 
 
