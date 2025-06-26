@@ -53,7 +53,10 @@ Clone and Set Up Deep SORT
 !mv ckpt.t7 /content/deep_sort/deep/checkpoint/ckpt.t7
 
 
-##  How to Run the Pipeline
+----
+
+
+## 🚀 How to Run the Pipeline
 
 **STEP 1: Player Detection using YOLO**
 
