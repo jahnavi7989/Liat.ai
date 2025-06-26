@@ -4,7 +4,6 @@ This project solves a real-world **sports analytics** problem: **player re-ident
 
 We use a **custom-trained YOLOv11** model for detecting players and a **Deep SORT tracker** to re-identify players using visual and motion-based features.
 
----
 
 ##  Objective
 
