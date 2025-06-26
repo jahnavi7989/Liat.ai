@@ -53,34 +53,58 @@ Clone and Set Up Deep SORT
 !mv ckpt.t7 /content/deep_sort/deep/checkpoint/ckpt.t7
 
 
-How to Run the Pipeline
+##  How to Run the Pipeline
 
-STEP 1: Player Detection using YOLO
+**STEP 1: Player Detection using YOLO**
 
+```python
 from ultralytics import YOLO
 model = YOLO("/content/drive/MyDrive/player-reid/mod.pt")
-results = model(frame)  
+results = model(frame)
+
 import pandas as pd
+# Format and save detections
+detections = []
+for result in results:
+    for box in result.boxes:
+        cls = int(box.cls[0])
+        if cls == 0:  # Player class
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            conf = float(box.conf[0])
+            detections.append([frame_id, x1, y1, x2, y2, conf])
 df = pd.DataFrame(detections, columns=["frame", "x1", "y1", "x2", "y2", "confidence"])
 df.to_csv("/content/player_detections.csv", index=False)
+```
 
-STEP 2: Player Tracking with Deep SORT
+**STEP 2: Player Tracking with Deep SORT**
 
+```python
 from deep_sort.deep_sort.deep_sort import DeepSort
 deepsort = DeepSort(model_path="/content/deep_sort/deep/checkpoint/ckpt.t7")
+
 outputs = deepsort.update(bbox_xywh, confs, [0]*len(bbox_xywh), frame)
-cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-cv2.putText(frame, f'ID: {track_id}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-Save final outputs:
+for output in outputs:
+    if len(output) == 5:
+        x, y, w, h, track_id = output
+        x1, y1, x2, y2 = int(x), int(y), int(x + w), int(y + h)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(frame, f'ID: {track_id}', (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+```
 
-player_reid_output.mp4   
-player_tracks.csv        
+**Save final outputs:**
 
-Output Samples
+- `player_reid_output.mp4`  
+- `player_tracks.csv`
+
+---
+
+## 📦 Output Samples
 
 | File                     | Description                              |
-| ------------------------ | ---------------------------------------- |
+|--------------------------|------------------------------------------|
 | `player_reid_output.mp4` | Output video with tracked player IDs     |
 | `player_tracks.csv`      | Frame-by-frame coordinates and player ID |
+
 
